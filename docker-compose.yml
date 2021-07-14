@@ -1,0 +1,30 @@
+version: "3"
+services:
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=apus
+      - POSTGRES_PASSWORD=apus
+      - POSTGRES_DB=apus
+#    volumes:
+#      - ./docker-volume/db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+      - postgres
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=apus@teste.com.br
+      - PGADMIN_DEFAULT_PASSWORD=apus
+#    volumes:
+#      - ./docker-volume/pgadmin:/var/lib/pgadmin
+    ports:
+      - 9000:80
+    networks:
+      - postgres
+networks:
+  postgres:
+    driver: bridge
