@@ -1,13 +1,13 @@
 package br.com.cwi.apus.web.response;
 
-import br.com.cwi.apus.web.domain.Basket;
-import br.com.cwi.apus.web.domain.Product;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@AllArgsConstructor
 public class BasketDetailResponse {
 
     private Double totalItems;
@@ -15,15 +15,5 @@ public class BasketDetailResponse {
     private Long time;
     private Double total;
     private Long volume;
-    private List<Product> item = new ArrayList<>();
-
-    public BasketDetailResponse(Basket basket){
-        this.totalItems = basket.getTotalItems();
-        this.shipping = basket.getShipping();
-        this.time = basket.getTime();
-        this.total = basket.getTotal();
-        this.volume = basket.getVolume();
-        this.item = basket.getItem();
-
-    }
+    private List<BasketItemDetailResponse> item = new ArrayList<>();
 }

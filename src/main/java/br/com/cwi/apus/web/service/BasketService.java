@@ -13,10 +13,13 @@ import br.com.cwi.apus.web.request.BasketAddItemRequest;
 import br.com.cwi.apus.web.request.BasketAddressRequest;
 import br.com.cwi.apus.web.request.BasketPaymentRequest;
 import br.com.cwi.apus.web.response.BasketDetailResponse;
+import br.com.cwi.apus.web.response.BasketItemDetailResponse;
 import br.com.cwi.apus.web.response.BasketResponse;
 import br.com.cwi.apus.web.response.PurchaseOrderResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.stream.Collectors;
 
 @Service
 public class BasketService {
@@ -62,7 +65,12 @@ public class BasketService {
 
     public BasketDetailResponse detail(Long id) {
         Basket basket = basketRepository.getById(id);
-        return new BasketDetailResponse(basket);
+        return new BasketDetailResponse(basket.getTotalItems(),basket.getShipping(),basket.getTime(),basket.getTotal(),basket.getVolume(),
+                basket.getItem().stream().map(p -> {
+                    BasketItemDetailResponse basketItemDetailResponse = new BasketItemDetailResponse(p.getId(),p.getQuantity(),p.getVolume());
+                    return basketItemDetailResponse;
+                }).collect(Collectors.toList())
+                );
     }
 
     public void addClient(Long id, BasketAddClientRequest basketAddClientRequest) {
