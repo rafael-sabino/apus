@@ -35,6 +35,9 @@ public class BasketService {
     @Autowired
     private PurchaseOrderRepository purchaseOrderRepository;
 
+    @Autowired
+    private SenderMailService senderMailService;
+
     private Double valorBasket;
     private Long volumeBasket;
     private Double totalBasket;
@@ -112,6 +115,8 @@ public class BasketService {
         purchaseOrder.setBasket(basket);
 
         purchaseOrderRepository.save(purchaseOrder);
+
+        senderMailService.enviar();
 
         return new PurchaseOrderResponse(purchaseOrder);
     }
