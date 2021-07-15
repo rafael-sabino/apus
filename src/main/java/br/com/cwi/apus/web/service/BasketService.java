@@ -103,6 +103,8 @@ public class BasketService {
         purchaseOrder.setStatus("CRIADO");
         purchaseOrder.setBasket(basket);
 
+        purchaseOrderRepository.save(purchaseOrder);
+
         return new PurchaseOrderResponse(purchaseOrder);
     }
 }
