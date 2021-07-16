@@ -15,7 +15,7 @@ spring:
     port: 587
     protocol: smtp
     username: <seu_email>@gmail.com
-    password: <chave de 16 digitos gerada pelo Google Account>
+    password: ${MY_PASSWORD}
     properties:
       mail:
         smtp:
@@ -29,3 +29,10 @@ logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+myapp:
+  password: ${MY_PASSWORD}
+  external:
+    lyra:
+      url: ${LYRA_URL:https://apus-external.herokuapp.com}
+    cetus:
+      url: ${CETUS_URL:https://apus-external.herokuapp.com}

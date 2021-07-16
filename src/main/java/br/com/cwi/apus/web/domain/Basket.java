@@ -17,7 +17,9 @@ public class Basket {
 
     private Double totalItems;
 
-    private Long shipping;
+    private String shippingId;
+
+    private Double shipping;
 
     private Double total;
 

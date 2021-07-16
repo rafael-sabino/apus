@@ -1,13 +1,15 @@
 package br.com.cwi.apus.web.service;
 
+import br.com.cwi.apus.external.cetus.request.ShippingExternalRequest;
+import br.com.cwi.apus.external.cetus.response.ShippingExternalResponse;
 import br.com.cwi.apus.web.domain.Basket;
 import br.com.cwi.apus.web.domain.Client;
-import br.com.cwi.apus.web.domain.PurchaseOrder;
 import br.com.cwi.apus.web.domain.Product;
+import br.com.cwi.apus.web.domain.PurchaseOrder;
 import br.com.cwi.apus.web.repository.BasketRepository;
 import br.com.cwi.apus.web.repository.ClientRepository;
-import br.com.cwi.apus.web.repository.PurchaseOrderRepository;
 import br.com.cwi.apus.web.repository.ProductRepository;
+import br.com.cwi.apus.web.repository.PurchaseOrderRepository;
 import br.com.cwi.apus.web.request.BasketAddClientRequest;
 import br.com.cwi.apus.web.request.BasketAddItemRequest;
 import br.com.cwi.apus.web.request.BasketAddressRequest;
@@ -17,7 +19,9 @@ import br.com.cwi.apus.web.response.BasketItemDetailResponse;
 import br.com.cwi.apus.web.response.BasketResponse;
 import br.com.cwi.apus.web.response.PurchaseOrderResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.stream.Collectors;
 
@@ -37,6 +41,12 @@ public class BasketService {
 
     @Autowired
     private SenderMailService senderMailService;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Value("${myapp.external.cetus.url}")
+    private String cetusUrl;
 
     private Double valorBasket;
     private Long volumeBasket;
@@ -88,14 +98,36 @@ public class BasketService {
         basketRepository.save(basket);
     }
 
+    public ShippingExternalResponse ship(ShippingExternalRequest shippingExternalRequest){
+
+        String url = cetusUrl + "/api/cetus/shipping";
+
+        ShippingExternalResponse shippingExternalResponse = restTemplate.postForObject(url,shippingExternalRequest,ShippingExternalResponse.class);
+        return shippingExternalResponse;
+    }
+
     public void attAddress(Long id, BasketAddressRequest basketAddressRequest) {
         Basket basket = basketRepository.getById(id);
         Client client = clientRepository.getById(basket.getClient().getId());
+        ShippingExternalRequest shippingExternalRequest = new ShippingExternalRequest();
 
         client.setZip(basketAddressRequest.getZip());
         client.setAddres(basketAddressRequest.getAddress());
 
         clientRepository.save(client);
+
+        shippingExternalRequest.setVolume(basket.getVolume());
+        shippingExternalRequest.setZipDestination(client.getZip());
+        shippingExternalRequest.setZipOrigin("111111");
+
+        ShippingExternalResponse shippingExternalResponse = ship(shippingExternalRequest);
+
+        basket.setShippingId(shippingExternalResponse.getId());
+        basket.setTime(shippingExternalResponse.getTime());
+        basket.setShipping(shippingExternalResponse.getPrice());
+        basket.setTotal(basket.getTotalItems() + basket.getShipping());
+
+        basketRepository.save(basket);
     }
 
     public void attPayment(Long id, BasketPaymentRequest basketPaymentRequest) {

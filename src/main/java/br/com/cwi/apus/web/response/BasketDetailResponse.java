@@ -11,7 +11,7 @@ import java.util.List;
 public class BasketDetailResponse {
 
     private Double totalItems;
-    private Long shipping;
+    private Double shipping;
     private Long time;
     private Double total;
     private Long volume;

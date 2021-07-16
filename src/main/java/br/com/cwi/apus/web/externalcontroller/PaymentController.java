@@ -1,4 +1,4 @@
-package br.com.cwi.apus.web;
+package br.com.cwi.apus.web.externalcontroller;
 
 import br.com.cwi.apus.external.lyra.response.PaymentExternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
