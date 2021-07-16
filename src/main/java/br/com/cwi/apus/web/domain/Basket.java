@@ -27,7 +27,7 @@ public class Basket {
 
     private Long time;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     private Client client;
 
     @ManyToMany

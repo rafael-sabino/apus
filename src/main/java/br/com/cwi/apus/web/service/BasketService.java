@@ -2,6 +2,8 @@ package br.com.cwi.apus.web.service;
 
 import br.com.cwi.apus.external.cetus.request.ShippingExternalRequest;
 import br.com.cwi.apus.external.cetus.response.ShippingExternalResponse;
+import br.com.cwi.apus.external.lyra.request.PaymentExternalRequest;
+import br.com.cwi.apus.external.lyra.response.PaymentExternalIdResponse;
 import br.com.cwi.apus.web.domain.Basket;
 import br.com.cwi.apus.web.domain.Client;
 import br.com.cwi.apus.web.domain.Product;
@@ -27,6 +29,10 @@ import java.util.stream.Collectors;
 
 @Service
 public class BasketService {
+
+    private static final String ZIP_ORIGIN = "111111";
+    public static final long DEFAULT_ID = 1111L;
+
     @Autowired
     private BasketRepository basketRepository;
 
@@ -47,6 +53,9 @@ public class BasketService {
 
     @Value("${myapp.external.cetus.url}")
     private String cetusUrl;
+
+    @Value("${myapp.external.lyra.url}")
+    private String lyraUrl;
 
     private Double valorBasket;
     private Long volumeBasket;
@@ -118,7 +127,7 @@ public class BasketService {
 
         shippingExternalRequest.setVolume(basket.getVolume());
         shippingExternalRequest.setZipDestination(client.getZip());
-        shippingExternalRequest.setZipOrigin("111111");
+        shippingExternalRequest.setZipOrigin(ZIP_ORIGIN);
 
         ShippingExternalResponse shippingExternalResponse = ship(shippingExternalRequest);
 
@@ -139,16 +148,32 @@ public class BasketService {
         clientRepository.save(client);
     }
 
+    public PaymentExternalIdResponse payment(PaymentExternalRequest paymentExternalRequest){
+
+        String url = lyraUrl + "/api/lyra/payment";
+
+        PaymentExternalIdResponse paymentExternalIdResponse = restTemplate.postForObject(url,paymentExternalRequest,PaymentExternalIdResponse.class);
+        return paymentExternalIdResponse;
+    }
+
     public PurchaseOrderResponse newOrder(Long id) {
         Basket basket = basketRepository.getById(id);
         PurchaseOrder purchaseOrder = new PurchaseOrder();
+        PaymentExternalRequest paymentExternalRequest = new PaymentExternalRequest();
 
+        paymentExternalRequest.setId(DEFAULT_ID);
+        paymentExternalRequest.setTotal(basket.getTotal());
+        paymentExternalRequest.setCard(basket.getClient().getCard());
+
+        PaymentExternalIdResponse paymentExternalIdResponse = payment(paymentExternalRequest);
+
+        purchaseOrder.setPaymentId(paymentExternalIdResponse.getId());
         purchaseOrder.setStatus("CRIADO");
         purchaseOrder.setBasket(basket);
 
         purchaseOrderRepository.save(purchaseOrder);
 
-        senderMailService.enviar();
+        //senderMailService.enviar();
 
         return new PurchaseOrderResponse(purchaseOrder);
     }
